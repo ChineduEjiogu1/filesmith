@@ -1,11 +1,11 @@
 import os
 from filesmith.core.project import Project
-from filesmith.core.report import print_report
 from filesmith.generators.checkerboard import generate_checkerboard
 from filesmith.exporters.ppm_exporter import save_as_ppm_p3, save_as_ppm_p6
 from filesmith.exporters.txt_exporter import save_as_txt
 from filesmith.core.report import print_report, save_report
-
+from filesmith.exporters.svg_exporter import save_as_svg
+from filesmith.exporters.html_exporter import save_report_html
 
 def main():
     os.makedirs("exports", exist_ok=True)
@@ -27,9 +27,21 @@ def main():
     save_as_ppm_p6(binary_path, image_object)
     project.add_export_path(binary_path)
 
+    txt_path = "exports/checkerboard.txt"
+    save_as_txt(txt_path, image_object)
+    project.add_export_path(txt_path)
+
     report_path = "exports/checkerboard_report.txt"
     save_report(project, report_path)
     project.add_export_path(report_path)
+
+    report_path = "exports/checkerboard.svg"
+    save_as_svg(report_path, image_object, 200)
+    project.add_export_path(report_path)
+
+    html_path = "exports/checkerboard_report.html"
+    save_report_html(html_path, project)
+    project.add_export_path(html_path)
 
     print_report(project)
 
