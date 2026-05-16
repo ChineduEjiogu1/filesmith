@@ -52,9 +52,10 @@ class Image:
             self.pixels[y][x] = new_color
 
     def validate_pixels(self):
-        if not(self.width > 0 and self.height > 0):
+        if not (self.width > 0 and self.height > 0):
             print(f"Invalid dimensions: {self.width}x{self.height}")
             return False
+        
         if len(self.pixels) != self.height:
             print(f"Invalid height: Expected {self.height}, got {len(self.pixels)}")
             return False
