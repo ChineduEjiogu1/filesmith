@@ -14,7 +14,7 @@ import struct
 
 def save_as_bmp(filename, image_object):
     if image_object is None:
-        print("Error: Cannot save. Image object is None.")
+        print(f"Error: Cannot save. Image object is None.")
         return False
 
     width = image_object.width

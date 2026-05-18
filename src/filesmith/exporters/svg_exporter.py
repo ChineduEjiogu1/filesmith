@@ -18,21 +18,26 @@
 
 from filesmith.utils.file_writer import write_text_file
 
-def save_as_svg(filename, image, cell_size):
-    if image is None or (cell_size <= 0):
+def save_as_svg(filename, image, scale):
+    if image is None:
+        print("Error: Image is missing.")
         return False
 
-    svg_content = f'<svg width="{image.width * cell_size}" height="{image.height * cell_size}" xmlns="http://www.w3.org/2000/svg">\n'
+    if scale <= 0:
+        print("Error: Scale must be greater than 0.")
+        return False
+    
+    svg_width = image.width * scale
+    svg_height = image.height * scale
+
+    svg_content = f'<svg xmlns="http://www.w3.org/2000/svg" width="{svg_width}" height="{svg_height}">\n'
 
     for y in range(image.height):
         for x in range(image.width):
-        # append each <rect> to svg_content
-            cell_x = x * cell_size
-            cell_y = y * cell_size
             r, g, b = image.pixels[y][x]
-
-            svg_content += (f'<rect x="{cell_x}" y="{cell_y}" width="{cell_size}" height="{cell_size}" fill="rgb({r},{g},{b})"/>\n')
-
+            rec_x = x * scale
+            rec_y = y * scale
+            svg_content += f'<rect x="{rec_x}" y="{rec_y}" width="{scale}" height="{scale}" fill="rgb({r},{g},{b})"/>\n'
 
     svg_content += '</svg>\n'
 

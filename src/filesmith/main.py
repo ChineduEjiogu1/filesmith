@@ -1,6 +1,7 @@
 import os
 import argparse
 from filesmith.core.project import Project
+from filesmith.utils.colors import parse_rgb_color
 from filesmith.generators.checkerboard import generate_checkerboard
 from filesmith.generators.stripes import generate_stripes
 from filesmith.generators.gradient import generate_gradient
@@ -10,6 +11,7 @@ from filesmith.core.report import print_report, save_report
 from filesmith.exporters.svg_exporter import save_as_svg
 from filesmith.exporters.html_exporter import save_report_html
 from filesmith.exporters.bmp_exporter import save_as_bmp
+from filesmith.utils.image_scaling import scale_image_nearest
 
 ALL_FORMATS = ['p3', 'p6', 'svg', 'bmp', 'txt', 'report', 'html']
 
@@ -22,6 +24,10 @@ def parse_args():
     parser.add_argument('--formats', nargs='+', choices=ALL_FORMATS, default=ALL_FORMATS)
     parser.add_argument('--pattern', choices=['checkerboard', 'stripes', 'gradient'], default='checkerboard')
     parser.add_argument('--direction', choices=['horizontal', 'vertical'], default='horizontal')
+    parser.add_argument('--color-a', type=parse_rgb_color, default=(255, 255, 255))
+    parser.add_argument('--color-b', type=parse_rgb_color, default=(0, 0, 0))
+    parser.add_argument('--svg-scale', type=int, default=20)
+    parser.add_argument('--bmp-scale', type=int, default=1)
     return parser.parse_args()
 
 
@@ -34,6 +40,12 @@ def validate_args(args):
         return False
     if args.cell_size <= 0:
         print("Error: --cell-size must be greater than 0.")
+        return False
+    if args.svg_scale <= 0:
+        print("Error: --svg-scale must be greater than 0.")
+        return False
+    if args.bmp_scale <= 0:
+        print("Error: --bmp-scale must be greater than 0.")
         return False
     return True
 
@@ -52,14 +64,15 @@ def main():
 
     project = Project(title=title, description=description)
 
-    white, black = (255, 255, 255), (0, 0, 0)
+    color_a = args.color_a
+    color_b = args.color_b
 
     if args.pattern == 'checkerboard':
-        image_object = generate_checkerboard(args.width, args.height, args.cell_size, white, black)
+        image_object = generate_checkerboard(args.width, args.height, args.cell_size, color_a, color_b)
     elif args.pattern == 'stripes':
-        image_object = generate_stripes(args.width, args.height, args.cell_size, white, black, args.direction)
+        image_object = generate_stripes(args.width, args.height, args.cell_size, color_a, color_b, args.direction)
     elif args.pattern == 'gradient':
-        image_object = generate_gradient(args.width, args.height, white, black, args.direction)
+        image_object = generate_gradient(args.width, args.height, color_a, color_b, args.direction)
 
     project.set_image(image_object)
 
@@ -78,12 +91,13 @@ def main():
 
     if 'svg' in fmt:
         path = os.path.join(args.output_dir, f"{base_name}.svg")
-        if save_as_svg(path, image_object, 20):
+        if save_as_svg(path, image_object, args.svg_scale):
             project.add_export_path(path)
 
     if 'bmp' in fmt:
         path = os.path.join(args.output_dir, f"{base_name}.bmp")
-        if save_as_bmp(path, image_object):
+        bmp_image = scale_image_nearest(image_object, args.bmp_scale) if args.bmp_scale > 1 else image_object
+        if save_as_bmp(path, bmp_image):
             project.add_export_path(path)
 
     if 'txt' in fmt:
